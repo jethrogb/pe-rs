@@ -1,0 +1,16 @@
+[package]
+name = "pe"
+description = "Portable Executable (PE) parsing library"
+version = "0.1.0"
+authors = ["Jethro Beekman <jethro@jbeekman.nl>"]
+license = "GPL-2.0+"
+repository = "https://github.com/jethrogb/pe-rs"
+exclude = ["test/*.dll"]
+
+[dependencies]
+bitflags = "0.4"    # MIT/Apache-2.0
+
+[dev-dependencies]
+lazy_static = "0.1" # MIT
+itertools = "0.4"   # MIT/Apache-2.0
+
