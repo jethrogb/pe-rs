@@ -9,8 +9,6 @@
  * of the License.
  */
 
-#![feature(read_exact,read_exact_old)]
-
 #[cfg_attr(test,macro_use)]
 #[cfg(test)]
 extern crate lazy_static;

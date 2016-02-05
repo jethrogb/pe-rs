@@ -207,7 +207,7 @@ pub trait FPRef<'data> {
 impl<'data> FPRef<'data> for [u8] {
 	fn ref_at<T: RefSafe>(&'data self, fp: FP<T>) -> Result<&'data T> {
 		if fp+size_of::<T>()>self.len() {
-			return Err(IoError::new(IoErrorKind::UnexpectedEOF,"input buffer not long enough").into())
+			return Err(IoError::new(IoErrorKind::UnexpectedEof,"input buffer not long enough").into())
 		}
 		unsafe{
 			let ptr=self.as_ptr().offset(fp.get() as isize) as *const T;
@@ -217,7 +217,7 @@ impl<'data> FPRef<'data> for [u8] {
 
 	fn ref_slice_at<T: RefSafe>(&'data self, fp: FP<[T]>, count: u32) -> Result<&'data [T]> {
 		if (fp+(count as usize*size_of::<T>()))>self.len() {
-			return Err(IoError::new(IoErrorKind::UnexpectedEOF,"input buffer not long enough").into())
+			return Err(IoError::new(IoErrorKind::UnexpectedEof,"input buffer not long enough").into())
 		}
 		unsafe{
 			let ptr=self.as_ptr().offset(fp.get() as isize) as *const T;
@@ -232,7 +232,7 @@ impl<'data> FPRef<'data> for [u8] {
 		}
 		let cstr=unsafe{transmute::<&[u8],&[CChar]>(data)};
 		match cstr.null_terminated() {
-			None => Err(IoError::new(IoErrorKind::UnexpectedEOF,"could not find NULL terminator").into()),
+			None => Err(IoError::new(IoErrorKind::UnexpectedEof,"could not find NULL terminator").into()),
 			Some(strz) => Ok(&cstr[..strz.len()+1]),
 		}
 	}
