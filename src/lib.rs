@@ -198,14 +198,14 @@ impl<'data> Pe<'data> {
 		if self.directories.len()<=(entry as usize) {
 			return Err(Error::DirectoryMissing);
 		}
-		Ok(unsafe{transmute::<&DataDirectory<_>,&DataDirectory<_>>(&self.directories[entry as usize])})
+		Ok(unsafe{transmute::<&'data DataDirectory<_>,&'data DataDirectory<_>>(&self.directories[entry as usize])})
 	}
 
 	pub fn get_directory_raw(&self, entry: DirectoryEntry) -> Result<&'data DataDirectory<RVA<[u8]>>> {
 		if self.directories.len()<=(entry as usize) {
 			return Err(Error::DirectoryMissing);
 		}
-		Ok(unsafe{transmute::<&DataDirectory<_>,&DataDirectory<_>>(&self.directories[entry as usize])})
+		Ok(unsafe{transmute::<&'data DataDirectory<_>,&'data DataDirectory<_>>(&self.directories[entry as usize])})
 	}
 
 	pub fn get_exports(&self) -> Result<Exports> {
@@ -227,7 +227,7 @@ impl<'pe,'data: 'pe> Exports<'pe, 'data> {
 		self.edir
 	}
 
-	pub fn concretize_export_address(&self, addr: &RawExportAddress) -> ExportAddress<'data> {
+	pub fn concretize_export_address<'a>(&self, addr: &'a RawExportAddress) -> ExportAddress<'a> {
 		if addr.0>=self.ddir.virtual_address && addr.0<(self.ddir.virtual_address+self.ddir.size) {
 			ExportAddress::Forwarder(unsafe{transmute(addr)})
 		} else {
