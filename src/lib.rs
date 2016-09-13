@@ -64,6 +64,28 @@ impl<'data> PeOptionalHeader<'data> {
 	}
 }
 
+pub trait Directory: RefSafe {
+	type Type: utility::Size4Bytes + URP<Self>;
+
+	// TODO: replace by const fn or associated constant when stable
+	fn entry() -> DirectoryEntry;
+}
+
+macro_rules! directory_entry(
+	($n:ident = $urp:ident<$t:ty>) => (
+		impl Directory for $t {
+			type Type = $urp<$t>;
+
+			fn entry() -> DirectoryEntry {
+				DirectoryEntry::$n
+			}
+		}
+	);
+);
+
+directory_entry!(ExportTable         = RVA<ExportDirectory>);
+directory_entry!(BaseRelocationTable = RVA<RelocationBlock>);
+
 pub struct Exports<'pe,'data: 'pe> {
 	pe: &'pe Pe<'data>,
 	ddir: &'data DataDirectory<RVA<ExportDirectory>>,
@@ -194,11 +216,10 @@ impl<'data> Pe<'data> {
 		self.sections
 	}
 
-	pub fn get_directory<P: RefSafe>(&self, entry: DirectoryEntry) -> Result<&'data DataDirectory<RVA<P>>> {
-		if self.directories.len()<=(entry as usize) {
-			return Err(Error::DirectoryMissing);
-		}
-		Ok(unsafe{transmute::<&'data DataDirectory<_>,&'data DataDirectory<_>>(&self.directories[entry as usize])})
+	pub fn get_directory<D: Directory>(&self) -> Result<&'data DataDirectory<D::Type>> {
+		self.directories.get(D::entry() as usize)
+			.ok_or(Error::DirectoryMissing)
+			.map(|ddir|unsafe{transmute::<&'data DataDirectory<_>,&'data DataDirectory<_>>(ddir)})
 	}
 
 	pub fn get_directory_raw(&self, entry: DirectoryEntry) -> Result<&'data DataDirectory<RVA<[u8]>>> {
@@ -209,15 +230,15 @@ impl<'data> Pe<'data> {
 	}
 
 	pub fn get_exports(&self) -> Result<Exports> {
-		let ddir: &DataDirectory<RVA<ExportDirectory>>=try!(self.get_directory(DirectoryEntry::ExportTable));
-		if ddir.size<(size_of::<ExportDirectory>() as u32) {
+		let ddir=try!(self.get_directory::<ExportDirectory>());
+		if (ddir.size as usize)<size_of::<ExportDirectory>() {
 			return Err(Error::InvalidSize);
 		}
 		Ok(Exports{pe:self,ddir:ddir,edir:try!(self.ref_at(ddir.virtual_address))})
 	}
 
 	pub fn get_relocations<'pe>(&'pe self) -> Result<RelocationIter<'pe,'data>> {
-		let ddir: &DataDirectory<RVA<RelocationBlock>>=try!(self.get_directory(DirectoryEntry::BaseRelocationTable));
+		let ddir=try!(self.get_directory::<RelocationBlock>());
 		Ok(RelocationIter{pe:self,next_rblock:ddir.virtual_address,end:ddir.virtual_address+ddir.size})
 	}
 }

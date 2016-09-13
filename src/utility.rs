@@ -157,7 +157,7 @@ unsafe impl Size4Bytes for u32 {}
 unsafe impl Size4Bytes for i32 {}
 
 // This trait must only be implemented by types without pointers/references!
-pub unsafe trait RefSafe {}
+pub unsafe trait RefSafe: Sized {}
 
 unsafe impl RefSafe for u8 {}
 unsafe impl RefSafe for u16 {}
