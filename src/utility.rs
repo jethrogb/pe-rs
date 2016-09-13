@@ -124,6 +124,7 @@ define_urp!{pub struct FP<T>;}
 define_urp!{pub struct RVA<T>;}
 
 #[repr(packed)]
+#[derive(Clone, Copy, Debug)]
 pub struct CChar(u8);
 
 trait NullTerminatedStr {

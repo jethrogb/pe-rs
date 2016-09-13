@@ -19,7 +19,7 @@ pub const OH_SIGNATURE_PE32: u16 = 0x10b;
 pub const OH_SIGNATURE_PE32P: u16 = 0x20b;
 
 #[repr(u16)]
-#[derive(Copy,Clone,PartialEq,Eq)]
+#[derive(Copy,Clone,Debug,PartialEq,Eq)]
 pub enum Machine {
     UNKNOWN   = 0x0000,
     AM33      = 0x01d3,
@@ -46,7 +46,7 @@ pub enum Machine {
 }
 
 #[repr(u16)]
-#[derive(Copy,Clone,PartialEq,Eq)]
+#[derive(Copy,Clone,Debug,PartialEq,Eq)]
 pub enum Subsystem {
     UNKNOWN                 =  0,
     NATIVE                  =  1,
@@ -62,7 +62,7 @@ pub enum Subsystem {
 }
 
 #[repr(u16)]
-#[derive(Copy,Clone,PartialEq,Eq)]
+#[derive(Copy,Clone,Debug,PartialEq,Eq)]
 pub enum RelocationType {
 	ABSOLUTE        = 0,
 	HIGH            = 1,
@@ -83,6 +83,7 @@ pub enum RelocationType {
 }
 
 pub mod image_characteristics {
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms680313(v=vs.85).aspx
     bitflags! {
         #[repr(packed)]
         flags Characteristics: u16 {
@@ -171,7 +172,7 @@ pub mod section_characteristics {
 }
 
 #[repr(usize)]
-#[derive(Copy,Clone,PartialEq,Eq)]
+#[derive(Copy,Clone,Debug,PartialEq,Eq)]
 pub enum DirectoryEntry {
     ExportTable = 0,
     ImportTable,
@@ -192,7 +193,7 @@ pub enum DirectoryEntry {
 }
 
 #[repr(packed)]
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct DosHeader {
     pub signature: u16,
     _unused: [u16; 29],
@@ -201,6 +202,7 @@ pub struct DosHeader {
 unsafe impl RefSafe for DosHeader {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct PeHeader {
     pub signature: u32,
     pub machine: Machine,
@@ -214,6 +216,7 @@ pub struct PeHeader {
 unsafe impl RefSafe for PeHeader {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct PeOptionalHeader32 {
     pub signature: u16,
     pub major_linker_version: u8,
@@ -249,6 +252,7 @@ pub struct PeOptionalHeader32 {
 unsafe impl RefSafe for PeOptionalHeader32 {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct PeOptionalHeader64 {
     pub signature: u16,
     pub major_linker_version: u8,
@@ -283,6 +287,7 @@ pub struct PeOptionalHeader64 {
 unsafe impl RefSafe for PeOptionalHeader64 {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct DataDirectory<T: Size4Bytes> {
     pub virtual_address: T, //Normally RVA, but FP for offset 4 (Certificate table)
     pub size: u32,
@@ -290,6 +295,7 @@ pub struct DataDirectory<T: Size4Bytes> {
 unsafe impl<T: RefSafe> RefSafe for DataDirectory<T> where T: Size4Bytes {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct SectionHeader {
     pub name: [CChar;8],
     pub virtual_size: u32,
@@ -305,6 +311,7 @@ pub struct SectionHeader {
 unsafe impl RefSafe for SectionHeader {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct ExportDirectory {
     pub export_flags: u32,
     pub time_date_stamp: u32,
@@ -321,18 +328,20 @@ pub struct ExportDirectory {
 unsafe impl RefSafe for ExportDirectory {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct RawExportAddress(pub RVA<()>);
 unsafe impl RefSafe for RawExportAddress {}
 
 #[repr(packed)]
+#[derive(Clone, Debug)]
 pub struct RelocationBlock {
     pub page_rva: RVA<()>, // Could be RVA<u16>, RVA<u32> or RVA<u64>
     pub block_size: u32,
 }
 unsafe impl RefSafe for RelocationBlock {}
 
-#[derive(Copy,Clone,PartialEq,Eq,Default)]
 #[repr(packed)]
+#[derive(Copy,Clone,Debug,PartialEq,Eq,Default)]
 pub struct Relocation(pub u16);
 unsafe impl RefSafe for Relocation {}
 
