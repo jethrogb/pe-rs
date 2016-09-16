@@ -202,7 +202,7 @@ impl From<IoError> for Error {
 pub trait FPRef<'data> {
 	fn ref_at<T: RefSafe>(&'data self, fp: FP<T>) -> Result<&'data T>;
 	fn ref_slice_at<T: RefSafe>(&'data self, fp: FP<[T]>, count: u32) -> Result<&'data [T]>;
-	fn ref_cstr_at(&'data self, fp: FP<[CChar]>, maxlen: u32) -> Result<&'data [CChar]>;
+	fn ref_cstr_at(&'data self, fp: FP<[CChar]>, maxlen: Option<u32>) -> Result<&'data [CChar]>;
 }
 
 impl<'data> FPRef<'data> for [u8] {
@@ -226,11 +226,10 @@ impl<'data> FPRef<'data> for [u8] {
 		}
 	}
 
-	fn ref_cstr_at(&'data self, fp: FP<[CChar]>, maxlen: u32) -> Result<&'data [CChar]> {
-		let mut data=&self[fp.get() as usize..];
-		if (maxlen as usize)<data.len() {
-			data=&data[..maxlen as usize];
-		}
+	fn ref_cstr_at(&'data self, fp: FP<[CChar]>, maxlen: Option<u32>) -> Result<&'data [CChar]> {
+		let start = fp.get() as usize;
+		let end = maxlen.map(|len| start + len as usize).unwrap_or(self.len());
+		let data=&self[start..end];
 		let cstr=unsafe{transmute::<&[u8],&[CChar]>(data)};
 		match cstr.null_terminated() {
 			None => Err(IoError::new(IoErrorKind::UnexpectedEof,"could not find NULL terminator").into()),

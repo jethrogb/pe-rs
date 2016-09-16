@@ -22,8 +22,8 @@ mod utility;
 use std::mem::{transmute,size_of};
 
 use types::*;
-use utility::{FP,RefSafe,URP,URPConvert,FPRef};
-pub use utility::{RVA,CChar,Error,Result,AsOsStr};
+use utility::{RefSafe,URP,URPConvert,FPRef};
+pub use utility::{FP,RVA,CChar,Error,Result,AsOsStr};
 
 #[cfg(target_endian="big")] const E:ENDIANNESS_NOT_SUPPORTED=();
 
@@ -194,7 +194,19 @@ impl<'data> Pe<'data> {
 	pub fn ref_cstr_at(&self, rva: RVA<[CChar]>) -> Result<&'data [CChar]> {
 		let mut max_len=0;
 		let fp=try!(self.resolve_rva_raw(rva+0u32,0,Some(&mut max_len)));
-		self.data.ref_cstr_at(fp.offset(0),max_len)
+		self.data.ref_cstr_at(fp.offset(0),Some(max_len))
+	}
+
+	pub fn ref_at_fp<T: RefSafe>(&self, fp: FP<T>) -> Result<&'data T> {
+		self.data.ref_at(fp)
+	}
+
+	pub fn ref_slice_at_fp<T: RefSafe>(&self, fp: FP<[T]>, count: u32) -> Result<&'data [T]> {
+		self.data.ref_slice_at(fp,count)
+	}
+
+	pub fn ref_cstr_at_fp(&self, fp: FP<[CChar]>) -> Result<&'data [CChar]> {
+		self.data.ref_cstr_at(fp,None)
 	}
 
 	pub fn ref_pe_header(&self) -> Result<&'data [u8]> {
