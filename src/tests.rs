@@ -43,6 +43,35 @@ fn list_sections() {
 }
 
 #[test]
+fn rsds_debug_directory() {
+	let debug_dir = SQLITE_X86_PE.get_directory::<DebugDirectory>().unwrap();
+
+	let start_address: utility::RVA<types::DebugDirectory> = debug_dir.virtual_address;
+	let size = debug_dir.size;
+
+	let num_debug_directories = size / 28;
+	assert_eq!(num_debug_directories, 2);
+
+	let rsds_offset: RVA<DebugDirectory> = start_address;
+	let rsds_debug_entry: &DebugDirectory = SQLITE_X86_PE.ref_at(rsds_offset).unwrap();
+	assert_eq!(rsds_debug_entry.debug_type, 2);
+
+	let signature_rva: RVA<u32> = RVA::new(rsds_debug_entry.address_of_raw_data.get());
+	let signature: &u32 = SQLITE_X86_PE.ref_at(signature_rva).unwrap();
+	assert_eq!(signature, &0x53445352); // "RSDS"
+
+	let path_rva: RVA<[CChar]> = signature_rva.offset(24);
+	let path: &[CChar] = SQLITE_X86_PE.ref_cstr_at(path_rva).unwrap();
+	assert_eq!(path.as_os_str(), "C:\\dev\\sqlite\\core\\sqlite3.pdb");
+
+	let guid_bytes: RVA<[u8]> = signature_rva.offset(4);
+	let guid_bytes: &[u8] = SQLITE_X86_PE.ref_slice_at(guid_bytes, 16).unwrap();
+
+	// {39152019-C388-4D2A-AA1D-E640BF5EE86A}
+	assert_eq!(guid_bytes, &[25, 32, 21, 57, 136, 195, 42, 77, 170, 29, 230, 64, 191, 94, 232, 106]);
+}
+
+#[test]
 fn export_name() {
 	let name="sqlite3.dll";
 	let edir=SQLITE_X64_PE.get_exports().unwrap();

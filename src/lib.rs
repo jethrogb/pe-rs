@@ -85,6 +85,7 @@ macro_rules! directory_entry(
 
 directory_entry!(ExportTable         = RVA<ExportDirectory>);
 directory_entry!(BaseRelocationTable = RVA<RelocationBlock>);
+directory_entry!(Debug               = RVA<DebugDirectory>);
 
 pub struct Exports<'pe,'data: 'pe> {
 	pe: &'pe Pe<'data>,
