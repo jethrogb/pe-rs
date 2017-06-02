@@ -13,4 +13,3 @@ bitflags = "0.4"    # MIT/Apache-2.0
 [dev-dependencies]
 lazy_static = "0.1" # MIT
 itertools = "0.4"   # MIT/Apache-2.0
-
