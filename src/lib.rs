@@ -94,7 +94,7 @@ pub struct Exports<'pe,'data: 'pe> {
 
 #[derive(Debug)]
 pub enum ExportAddress<'data> {
-	Export(&'data RVA<Fn()>),
+	Export(&'data RVA<dyn Fn()>),
 	Forwarder(&'data RVA<[CChar]>),
 }
 
