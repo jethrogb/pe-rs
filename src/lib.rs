@@ -42,24 +42,24 @@ pub enum PeOptionalHeader<'data> {
 }
 
 impl<'data> PeOptionalHeader<'data> {
-	pub fn get_number_of_rva_and_sizes(&self) -> &'data u32 {
+	pub fn get_number_of_rva_and_sizes(&self) -> u32 {
 		match self {
-			&PeOptionalHeader::Pe32(h) => &h.number_of_rva_and_sizes,
-			&PeOptionalHeader::Pe32Plus(h) => &h.number_of_rva_and_sizes,
+			&PeOptionalHeader::Pe32(h) => h.number_of_rva_and_sizes,
+			&PeOptionalHeader::Pe32Plus(h) => h.number_of_rva_and_sizes,
 		}
 	}
 
-	pub fn get_size_of_headers(&self) -> &'data u32 {
+	pub fn get_size_of_headers(&self) -> u32 {
 		match self {
-			&PeOptionalHeader::Pe32(h) => &h.size_of_headers,
-			&PeOptionalHeader::Pe32Plus(h) => &h.size_of_headers,
+			&PeOptionalHeader::Pe32(h) => h.size_of_headers,
+			&PeOptionalHeader::Pe32Plus(h) => h.size_of_headers,
 		}
 	}
 
-	pub fn get_check_sum(&self) -> &'data u32 {
+	pub fn get_check_sum(&self) -> u32 {
 		match self {
-			&PeOptionalHeader::Pe32(h) => &h.check_sum,
-			&PeOptionalHeader::Pe32Plus(h) => &h.check_sum,
+			&PeOptionalHeader::Pe32(h) => h.check_sum,
+			&PeOptionalHeader::Pe32Plus(h) => h.check_sum,
 		}
 	}
 }
@@ -169,7 +169,7 @@ impl<'data> Pe<'data> {
 			_ => return Err(Error::NotPe),
 		};
 
-		let n=*pe_oh.get_number_of_rva_and_sizes();
+		let n=pe_oh.get_number_of_rva_and_sizes();
 		if ((n*size_of::<DataDirectory<u32>>() as u32) as u16)>dd_size {
 			return Err(Error::InvalidSize);
 		}
@@ -210,10 +210,10 @@ impl<'data> Pe<'data> {
 	}
 
 	pub fn ref_pe_header(&self) -> Result<&'data [u8]> {
-		if *self.oh.get_size_of_headers() as usize>self.data.len() {
+		if self.oh.get_size_of_headers() as usize>self.data.len() {
 			return Err(Error::InvalidSize);
 		}
-		Ok(&self.data[..*self.oh.get_size_of_headers() as usize])
+		Ok(&self.data[..self.oh.get_size_of_headers() as usize])
 	}
 
 	pub fn get_header(&self) -> &'data PeHeader {
