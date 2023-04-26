@@ -42,27 +42,31 @@ macro_rules! define_urp {
 		impl<T: ?Sized, U: ?Sized> ::std::cmp::PartialEq<$URP<U>> for $URP<T> {
 			#[inline]
 			fn eq(&self, other: &$URP<U>) -> bool {
-				self.0.eq(&other.0)
+				let (this, other) = (self.0, other.0);
+				this.eq(&other)
 			}
 		}
 		impl<T: ?Sized, U: ?Sized> ::std::cmp::PartialOrd<$URP<U>> for $URP<T> {
 			#[inline]
 			fn partial_cmp(&self, other: &$URP<U>) -> ::std::option::Option<::std::cmp::Ordering> {
-				self.0.partial_cmp(&other.0)
+				let (this, other) = (self.0, other.0);
+				this.partial_cmp(&other)
 			}
 		}
 		impl<T: ?Sized> ::std::cmp::Eq for $URP<T> {}
 		impl<T: ?Sized> ::std::cmp::Ord for $URP<T> {
 			#[inline]
 			fn cmp(&self, other: &$URP<T>) -> ::std::cmp::Ordering {
-				self.0.cmp(&other.0)
+				let (this, other) = (self.0, other.0);
+				this.cmp(&other)
 			}
 		}
 		impl<T: ?Sized> ::std::fmt::Debug for $URP<T> {
 			#[inline]
 			fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
 				let mut builder = f.debug_tuple(concat!(stringify!($URP),"<T>"));
-				builder.field(&self.0);
+				let inner = self.0;
+				builder.field(&inner);
 				builder.finish()
 			}
 		}
